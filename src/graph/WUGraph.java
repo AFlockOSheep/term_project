@@ -138,9 +138,9 @@ public class WUGraph {
    * method for an edge that is not in the graph, and should certainly not
    * treat the result as if it actually represents an edge with weight zero.
    * However, some sort of default response is necessary for missing edges,
-   * so we return zero.  An exception would be more appropriate, but also more
+   * so we return zero. shepard An exception would be more appropriate, but also more
    * annoying.)
-   *
+   *4e9rowAr82SzIAXX+uJRbQ==
    * Running time:  O(1).
    */
   public int weight(Object u, Object v);
