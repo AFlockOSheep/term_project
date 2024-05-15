@@ -102,9 +102,10 @@ public class Kruskal {
    * @return A newly constructed WUGraph representing the MST of g.
    */
   public static WUGraph minSpanTree(WUGraph g) {
-    HashMap<Integer, Object> vertexMap = new HashMap<>();
+    HashMap<Object, Integer> vertexMap = new HashMap<>();
     Edge[] edgeList = new Edge[g.edgeCount()];
     Object[] vertexList = g.getVertices(); //Object Array
+    DisjointSets disjointSets = new DisjointSets(vertexList.length);
 
     //PART 1
     //Create a new graph T having the same vertices as G, but no edges (yet).
@@ -130,16 +131,23 @@ public class Kruskal {
     Integer vertexNumber = 0;
     //creates a hash table of each vertex that maps to a unique integer
     for(Object vertex : vertexList) {
-      vertexMap.put(vertexNumber, vertex);
+      vertexMap.put(vertex, vertexNumber);
       vertexNumber++;
     }
 
     //PART 4.2
+    for(Edge edge : edgeList) {
+      Object vertex1 = edge.getVertex1();
+      Object vertex2 = edge.getVertex2();
 
+      int root1 = disjointSets.find(vertexMap.get(vertex1));
+      int root2 = disjointSets.find(vertexMap.get(vertex2));
 
-
-
-
+      if(root1 != root2) {
+        t.addEdge(vertex1, vertex2, edge.getWeight());
+        disjointSets.union(root1, root2);
+      }
+    }
     return t;
 
   }
