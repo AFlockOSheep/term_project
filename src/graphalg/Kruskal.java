@@ -5,13 +5,94 @@ package graphalg;
 import graph.*;
 import set.*;
 
+
+import java.util.*;
+
 /**
  * The Kruskal class contains the method minSpanTree(), which implements
  * Kruskal's algorithm for computing a minimum spanning tree of a graph.
  *4e9rowAr82SzIAXX+uJRbQ==
  */
 
+
 public class Kruskal {
+  private static void merge(Edge[] numbers, int i, int j, int k) {
+    int mergedSize = k - i + 1;                // Size of merged partition
+    Edge[] mergedNumbers = new Edge[mergedSize]; // Dynamically allocates temporary
+    // array for merged numbers
+    int mergePos = 0;                          // Position to insert merged number
+    int leftPos = i;                           // Initialize left partition position
+    int rightPos = j + 1;                      // Initialize right partition position
+
+    // Add smallest element from left or right partition to merged numbers
+    while (leftPos <= j && rightPos <= k) {
+      if (numbers[leftPos].getWeight() <= numbers[rightPos].getWeight()) {
+        mergedNumbers[mergePos] = numbers[leftPos];
+        leftPos++;
+      }
+      else {
+        mergedNumbers[mergePos] = numbers[rightPos];
+        rightPos++;
+      }
+      mergePos++;
+    }
+
+    // If left partition is not empty, add remaining elements to merged numbers
+    while (leftPos <= j) {
+      mergedNumbers[mergePos] = numbers[leftPos];
+      leftPos++;
+      mergePos++;
+    }
+
+    // If right partition is not empty, add remaining elements to merged numbers
+    while (rightPos <= k) {
+      mergedNumbers[mergePos] = numbers[rightPos];
+      rightPos++;
+      mergePos++;
+    }
+
+    // Copy merged numbers back to numbers
+    for (mergePos = 0; mergePos < mergedSize; mergePos++) {
+      numbers[i + mergePos] = mergedNumbers[mergePos];
+    }
+  }
+
+  private static void mergeSort(Edge[] numbers, int i, int k) {
+    int j = 0;
+
+    if (i < k) {
+      j = (i + k) / 2;  // Find the midpoint in the partition
+
+      // Recursively sort left and right partitions
+      mergeSort(numbers, i, j);
+      mergeSort(numbers, j + 1, k);
+
+      // Merge left and right partition in sorted order
+      merge(numbers, i, j, k);
+    }
+  }
+
+  private static HashSet<Edge> depthFirstSearch(WUGraph graph, Object startVertex) {
+    Stack<Object> vertexStack = new Stack<Object>();
+    HashSet<Object> visitedSet = new HashSet<Object>();
+    HashSet<Edge> edgeList = new HashSet<Edge>();
+
+    vertexStack.push(startVertex);
+
+    while (!vertexStack.isEmpty()) {
+      Object currentVertex = vertexStack.pop();
+      if (!visitedSet.contains(currentVertex)) {
+        visitedSet.add(currentVertex);
+        for(int i = 0; i < graph.getNeighbors(currentVertex).neighborList.length; i++) {
+          Object vertex = graph.getNeighbors(currentVertex).neighborList[i];
+          Edge edge = new Edge(currentVertex, vertex, graph.getNeighbors(currentVertex).weightList[i]);
+          edgeList.add(edge);
+          vertexStack.push(vertex);
+        }
+      }
+    }
+    return edgeList;
+  }
 
   /**
    * minSpanTree() returns a WUGraph that represents the minimum spanning tree
@@ -20,9 +101,57 @@ public class Kruskal {
    * @param g The weighted, undirected graph whose MST we want to compute.
    * @return A newly constructed WUGraph representing the MST of g.
    */
-  public static graph.WUGraph minSpanTree(WUGraph g) {
-    WUGraph T = new WUGraph();
-    return T;
+  public static WUGraph minSpanTree(WUGraph g) {
+    HashMap<Integer, Object> vertexMap = new HashMap<>();
+    Edge[] edgeList = new Edge[g.edgeCount()];
+    Object[] vertexList = g.getVertices(); //Object Array
+
+    //PART 1
+    //Create a new graph T having the same vertices as G, but no edges (yet).
+    WUGraph t = new WUGraph();
+    for(Object vertex : g.getVertices()) {
+      t.addVertex(vertex);
+    }
+
+    //4e9rowAr82SzIAXX+uJRbQ==
+    //PART 2
+    //Make a list of all edges in G
+    HashSet<Edge> set = depthFirstSearch(g, vertexList[0]);
+    set.toArray(edgeList);
+
+    //PART 3
+    //Sort edges by weight in O(|E| log |E|) time
+    //private static void mergeSort(Edge[] numbers, int i, int k) {
+    mergeSort(edgeList, 0, edgeList.length - 1);
+
+    //PART 4.1
+    //Create MST using disjoint sets and unions
+
+    Integer vertexNumber = 0;
+    //creates a hash table of each vertex that maps to a unique integer
+    for(Object vertex : vertexList) {
+      vertexMap.put(vertexNumber, vertex);
+      vertexNumber++;
+    }
+
+    //PART 4.2
+
+
+
+
+
+    return t;
+
   }
 
 }
+
+//    } DISCARDED CODE
+//    for(Edge edge : edgeList) {
+//      if(!weightMap.containsKey(edge.getWeight())) {
+//        LinkedList<Edge> weights = new LinkedList<Edge>();
+//        weights.add(edge);
+//        weightMap.put(edge.getWeight(), weights);
+//      } else {
+//        weightMap.get(edge.getWeight()).add(edge);
+//      }
