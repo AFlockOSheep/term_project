@@ -1,110 +1,78 @@
-/* WUGraph.java */
-// Vincent Hsiao, Yosef Samara
+/* WUGraph.java
+ * Shaniel Singh
+ * */
 
 package graph;
-import dict.*;
-import list.*;
-import set.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * The WUGraph class represents a weighted, undirected graph.  Self-edges are
  * permitted.
  */
 
-
-
 public class WUGraph {
+  /** Map from a vertex to its neighbors along with the associated weights.
+   *  Keys in the outer map are the starting vertices and the values are another map
+   *  with keys for destination vertices and values representing the weights
+   *  the structure is as follows below.
+   *
+   *EX:
+   * {
+   *   "A": {
+   *     "C": 1,
+   *     "B": 1,
+   *     "G": 3
+   *   }
+   *   "B": {
+   *     "A": 1
+   *   }
+   *   "C": {
+   *     "A": 1
+   *   },
+   *   "D": {}
+   *   "G": {
+   *     "A": 3
+   *   }
+   * }
+   *
+   **/
+  private Map<Object, Map<Object, Integer>> graph;
 
-  // vertex class
-
-  // Edge private class to support the "weight" functionality and pointers to half-node positions in the adjacency set to keep the removal operation O(D)
-  // VertexPair edgeAsVertexPair(): converts the edge's two vertex objects into a VertexPair object
-  private class Edge{
-    // vertex1 and vertex2: the "Vertexes" in the edge connection. Passed in with the constructor
-    // DListNode v1ptr, v2ptr: The pointers which point to the adjacency list node positions, of each connection, for each vertex's linked list.
-    // int weight: the weight of the connection, passed in via the Adjacency Graph
-
-    Object vertex1;
-    Object vertex2;
-    DListNode v1ptr;
-    DListNode v2ptr;
-    int weight;
-    Edge(Object v1, Object v2, int weight){
-      vertex1 = v1;
-      vertex2 = v2;
-
-      this.weight = weight;
-    }
-
-    int getWeight(){
-      return weight;
-    }
-    void setv1ptr(DListNode v1ptr){
-      this.v1ptr=v1ptr;
-    }
-    void setv2ptr(DListNode v2ptr){
-      this.v2ptr=v2ptr;
-    }
-    void setWeight(int weight){
-      this.weight=weight;
-    }
-
-    // return the edge as a vertex pair
-    VertexPair edgeAsVertexPair(){
-      return new VertexPair(vertex1, vertex2);
-    }
-
-  }
+  private int numEdges;
 
   /**
    * WUGraph() constructs a graph having no vertices or edges.
    *
    * Running time:  O(1).
+   * HashMaps offer easy lookup in constant time since everything is bound by a key so it is efficient for this graph implementation
+   * In order to have constant time for the edgeCount we keep track of it. Here we initialize a count to o to start.
    */
-
-  // VertexAdjList: The adjacency list with the vertex object as a key and a doubly-linked Linked List as its value, storing the vertexes in which it shares edges with.
-  // edgesList: Hash table with VertexPair(vertex1, vertex2) as its key and a Edge object as its value
-  // vertexList: A doubly linked list containing all of the vertices of the grpah
-  HashTableChained vertexAdjList;
-  HashTableChained edgesList;
-
-  DList vertexList;
-  int vertexCount;
-  int edgesCount;
-
-
-  // default constructor with zero parameters: initializes an empty graph with no edges/vertices
-  public WUGraph(){
-
-    // get everything initialized!
-
-
-    vertexAdjList = new HashTableChained();
-    edgesList = new HashTableChained();
-
-    vertexList = new DList();
-
-    vertexCount=0;
-    edgesCount=0;
-
+  public WUGraph() {
+    this.graph = new HashMap<>();
+    this.numEdges = 0;
   }
 
   /**
    * vertexCount() returns the number of vertices in the graph.
    *
    * Running time:  O(1).
+   * With the vertex count we can simply use the size method to return all the keys aka vertices in our graph
    */
-  public int vertexCount(){
-    return vertexCount;
+  public int vertexCount() {
+    return this.graph.size();
   }
 
   /**
    * edgeCount() returns the total number of edges in the graph.
+   * Above we kept track of a variable for the edges allowing to use this method in constant time.
+   * The use of a for loop here would have slowed down the runtime so instead we tracked the count manually
    *
    * Running time:  O(1).
    */
-  public int edgeCount(){
-    return edgesCount;
+  public int edgeCount() {
+    return this.numEdges;
   }
 
   /**
@@ -117,20 +85,13 @@ public class WUGraph {
    * vertices!  Return only the same objects that were provided by the
    * calling application in calls to addVertex().)
    *
+   * Here since we want the number of vertices we take the keySet method giving us a set of all the keys in our graph
+   * representing the total vertice count, then we use the toArray method to funnel it into an array as asked
+   *
    * Running time:  O(|V|).
    */
-
-
-  //
-  public Object[] getVertices(){
-    // temporary pointer to traverse the linked list
-    DListNode temp = vertexList.front();
-    Object[] retVal = new Object[vertexCount];
-    for(int i = 0; i < vertexCount; i++){
-      retVal[i] = temp.item;
-      temp = vertexList.next(temp);
-    }
-    return retVal;
+  public Object[] getVertices() {
+    return this.graph.keySet().toArray();
   }
 
   /**
@@ -139,17 +100,13 @@ public class WUGraph {
    * If this object is already a vertex of the graph, the graph is unchanged.
    *
    * Running time:  O(1).
+   * Here we first check before adding if the provided argument is even a valid vertex, we do so using the isVertex implemented later
+   * If the given parameter is not already a vertex, then we add it to the hashmap via the put method
    */
-  public void addVertex(Object vertex){
-    // if the vertex does not have a entry in the Vertex Adjacency list, add a entry with key=vertex object and value = empty doubly linked list
-    // increment vertexCont by one, and add to vertex linked list.
-    if(vertexAdjList.find(vertex) == null) {
-      vertexList.insertBack(vertex);
-      vertexAdjList.insert(vertex, new DList());
-      vertexCount++;
+  public void addVertex(Object vertex) {
+    if (!this.isVertex(vertex)) {
+      this.graph.put(vertex, new HashMap<>());
     }
-
-
   }
 
   /**
@@ -158,40 +115,20 @@ public class WUGraph {
    * represent a vertex of the graph, the graph is unchanged.
    *
    * Running time:  O(d), where d is the degree of "vertex".
+   * Here we first check before adding if the provided argument is even a valid vertex, we do so using the isVertex implemented later
+   * If it is a valid vertex then we initialize an Object array with all the destination vertices for that vertex.
+   * we do so by using the get method to get the vertex (k) along with the keySet method for the values to retrieve all the keys in the inner map representing the destVertices
+   * Finally we funnel this into an array, loop over it and remove whereever this vertex may be end at
+   * We also remove the vertex in the outer map as well and decrement the numEdges count by the length of destVertices since we now removed those connections
    */
-  public void removeVertex(Object vertex){
-    // if the vertex exists, get the vertex's neighbors from the adjacency list
-    // traverse through this Doubly linked list and get the Edge object of each connection from the edge hashtable
-    // via a new VertexPair with the current vertex and the vertex of the pointer
-    // remove both half-edge pointers from their respective linked lists, and decrease edgeCount by one
-    // once done, remove the vertex from the adjacency list and decrease the vertexCount
-    // TO DO: Remove the vertex from the Vertex linked list
-    if(vertexAdjList.find(vertex) != null){
-      DList vertexConnections = ((DList) vertexAdjList.find(vertex).value());
-      DListNode copy = vertexConnections.front();
-      for (int i = 0; i < vertexConnections.length(); i++){
-        VertexPair curEdgeVertexPair = new VertexPair(vertex, copy.item);
-        if(edgesList.find(curEdgeVertexPair) != null){
-          this.removeEdge(vertex, copy.item);
-
-          /*Edge curEdge = ((Edge) edgesList.find(curEdgeVertexPair).value());
-          ((DList) vertexAdjList.find(curEdge.vertex1).value()).remove(curEdge.v1ptr);
-          ((DList) vertexAdjList.find(curEdge.vertex2).value()).remove(curEdge.v2ptr);
-          edgesList.remove(curEdgeVertexPair);
-          edgesCount--; */
-        }
-        copy = vertexConnections.next(copy);
+  public void removeVertex(Object vertex) {
+    if (this.isVertex(vertex)) {
+      Object[] destVertices = this.graph.get(vertex).keySet().toArray();
+      for (Object destVertex : destVertices) {
+        this.graph.get(destVertex).remove(vertex);
       }
-      vertexAdjList.remove(vertex);
-      DListNode copy2 = vertexList.front();
-      for (int i = 0; i < vertexCount; i++){
-        if(copy2.item.equals(vertex)){
-          vertexList.remove(copy2);
-          break;
-        }
-        copy2=vertexList.next(copy2);
-      }
-      vertexCount--;
+      this.graph.remove(vertex);
+      this.numEdges -= destVertices.length;
     }
   }
 
@@ -200,13 +137,10 @@ public class WUGraph {
    * the graph.
    *
    * Running time:  O(1).
+   * This method uses the containsKey method to check if our map contains the specified vertex and returns a boolean
    */
-  public boolean isVertex(Object vertex){
-    // true if the vertex is in the vertex adjacency list's keys, false otherwise
-    if(vertexAdjList.find(vertex) != null){
-      return true;
-    }
-    return false;
+  public boolean isVertex(Object vertex) {
+    return this.graph.containsKey(vertex);
   }
 
   /**
@@ -215,13 +149,15 @@ public class WUGraph {
    * of the graph, zero is returned.
    *
    * Running time:  O(1).
+   * this first checks using an if statement if the vertex is a valid one or not using the isVertex method from earlier
+   * if it isn't valid, then we simply return 0 as asked
+   * If it is valid, then we use the get method on that vertex to return all of its connections and use the size method to get the total
    */
-  public int degree(Object vertex){
-    // count the number of vertices in the vertex's adjacency list linked list
-    if(vertexAdjList.find(vertex) != null){
-      return ((DList) vertexAdjList.find(vertex).value()).length();
+  public int degree(Object vertex) {
+    if (!this.isVertex(vertex)) {
+      return 0;
     }
-    return 0;
+    return this.graph.get(vertex).size();
   }
 
   /**
@@ -241,32 +177,27 @@ public class WUGraph {
    * that were provided by the calling application in calls to addVertex().)
    *
    * Running time:  O(d), where d is the degree of "vertex".
+   * The neighbors list is set equal to destVertices and the weightlist is set equal to an array of equal length to destVertices
+   * we loop over destVertices and swap the values in the array with the destVertices which would be the neighbors and finally return it
    */
-  public Neighbors getNeighbors(Object vertex){
-    // Get the vertex's linked list from the adjacency list hashtable
-    // Traverse through this list and store its different partners and their edge weights (from the edgesList hash talbe) in lists
-    // return it as a Neighbors object
-    DList vertexNeighbors = ((DList) vertexAdjList.find(vertex).value());
-    Object[] neighborVertices = new Object[vertexNeighbors.length()];
-
-    int[] weights = new int[vertexNeighbors.length()];
-
-    DListNode copy = vertexNeighbors.front();
-
-
-    for (int i = 0; i < vertexNeighbors.length(); i++){
-      Object curVertice = copy.item;
-      int curWeight = ((Edge) edgesList.find(new VertexPair(vertex, curVertice)).value()).getWeight();
-      weights[i] = curWeight;
-      neighborVertices[i] = curVertice;
-    }
-    Neighbors retVal = new Neighbors();
-    retVal.neighborList = neighborVertices;
-    retVal.weightList = weights;
-    if(neighborVertices.length == 0){
+  public Neighbors getNeighbors(Object vertex) {
+    if (!this.isVertex(vertex)) {
       return null;
     }
-    return retVal;
+
+    Object[] destVertices = this.graph.get(vertex).keySet().toArray();
+
+    if (destVertices.length == 0) {
+      return null;
+    }
+
+    Neighbors neighbors = new Neighbors();
+    neighbors.neighborList = destVertices;
+    neighbors.weightList = new int[destVertices.length];
+    for (int i = 0; i < destVertices.length; i++) {
+      neighbors.weightList[i] = this.graph.get(vertex).get(destVertices[i]);
+    }
+    return neighbors;
   }
 
   /**
@@ -276,36 +207,20 @@ public class WUGraph {
    * edge (u, v), the weight is updated to reflect the new value.  Self-edges
    * (where u.equals(v)) are allowed.
    *
+   *in order to add an edge we first check if the passed in values are true vertices or not, if not then we return nothing
+   *if the object U does not contain the key V then we are going to create that connection by incrementing the edge count by 1
+   *then since this is a undirected graph we have to add the edge both ways
    * Running time:  O(1).
    */
-  public void addEdge(Object u, Object v, int weight){
-    // if a existing edge does not exist in the vertex adjacency list, add a new Edge object
-    // initialize this object with vertex1 and vertex2 = u and v, vertex pointer 1 pointing to the adjacency list node of v in u, and vertex pointer 2 pointing to the adjacency list node ov u in v
-    // add the edge into the edge hashtable, key = the vertex pair, and increment the edgescount
-    if(vertexAdjList.find(u) != null && vertexAdjList.find(v) != null){
-      if(edgesList.find(new VertexPair(u,v)) == null) {
-        Edge tempEdge = new Edge(u, v, weight);
-        // if it is a self edge
-        if(u.equals(v)){
-          ((DList) vertexAdjList.find(u).value()).insertBack(v);
-          tempEdge.setv1ptr(((DList) vertexAdjList.find(u).value()).back());
-          tempEdge.setv2ptr(null);
-
-        } else {
-          ((DList) vertexAdjList.find(u).value()).insertBack(v);
-          tempEdge.setv1ptr(((DList) vertexAdjList.find(u).value()).back());
-          ((DList) vertexAdjList.find(v).value()).insertBack(u);
-          tempEdge.setv2ptr(((DList) vertexAdjList.find(v).value()).back());
-        }
-        edgesList.insert(new VertexPair(u, v), tempEdge);
-        edgesCount++;
-      } else {
-        // if the edge already exists, but is added again with a different weight,
-        // update the existing edge with the new weight
-        ((Edge) edgesList.find(new VertexPair(u,v)).value()).setWeight(weight);
-      }
+  public void addEdge(Object u, Object v, int weight) {
+    if (!this.isVertex(u) || !this.isVertex(v)) {
+      return;
     }
-
+    if (!this.graph.get(u).containsKey(v)) {
+      this.numEdges++;
+    }
+    this.graph.get(u).put(v, weight);
+    this.graph.get(v).put(u, weight);
   }
 
   /**
@@ -315,25 +230,16 @@ public class WUGraph {
    * unchanged.
    *
    * Running time:  O(1).
+   * first we check if this is not a edge, then we return nothing
+   * otherwise, we remove the edges both ways and decrement by 1 to show the removal of the edge
    */
   public void removeEdge(Object u, Object v) {
-    // if the vertexpair(u,v) is a key in the edges list, remove the edge
-    // remove its references in the vertex adjacency list by removing the nodes referenced by the two pointers
-
-    if (edgesList.find(new VertexPair(u, v)) != null && vertexAdjList.find(u) != null && vertexAdjList.find(v) != null) { // if the VertexPair(u,v) is found in the edgeList, vertex u and v is found in the adjacency list
-      ((DList) vertexAdjList.find(u).value()).remove(((Edge) edgesList.find(new VertexPair(u, v)).value()).v1ptr); // -> remove the vertex v instance in u's adjacency list (v1ptr is a quick o(1) reference to this node)
-
-      if(((Edge) edgesList.find(new VertexPair(u, v)).value()).v2ptr != null) {
-        // a self-edge would fail this condition, as the v1ptr is the only node, and v2ptr is null
-        ((DList) vertexAdjList.find(v).value()).remove(((Edge) edgesList.find(new VertexPair(u, v)).value()).v2ptr);
-
-      }
-
-
-      edgesList.remove(new VertexPair(u, v)); // edgeList removes the vertexPair and its Edge object value from the hash table
-      // flawed line
-      edgesCount--; // decrements the edge count of the graph by one
+    if (!this.isEdge(u, v)) {
+      return;
     }
+    this.graph.get(u).remove(v);
+    this.graph.get(v).remove(u);
+    this.numEdges--;
   }
 
   /**
@@ -342,12 +248,14 @@ public class WUGraph {
    * parameters u and v does not represent a vertex of the graph).
    *
    * Running time:  O(1).
+   * here we have a boolean that returns false when checking if either object is not a valid vertex
+   * it returns true if the key is present
    */
-
-  public boolean isEdge(Object u, Object v){
-    if(edgesList.find(new VertexPair(u,v)) != null){
-      return true;
-    } return false;
+  public boolean isEdge(Object u, Object v) {
+    if (!this.isVertex(u) || !this.isVertex(v)) {
+      return false;
+    }
+    return this.graph.get(u).containsKey(v);
   }
 
   /**
@@ -359,17 +267,15 @@ public class WUGraph {
    * method for an edge that is not in the graph, and should certainly not
    * treat the result as if it actually represents an edge with weight zero.
    * However, some sort of default response is necessary for missing edges,
-   * so we return zero.  An exception would be more appropriate, but also more
-   * annoying.)
+   * so we return zero.
+   * here we first check if there is an edge for the passed in objects, if there is then we get u and we get the mapping for the values representing the weight
    *
    * Running time:  O(1).
    */
-  public int weight(Object u, Object v){
-    // if the edge exists, return its "weight"
-    if(edgesList.find(new VertexPair(u,v)) != null){
-      return ((Edge) edgesList.find(new VertexPair(u,v)).value()).getWeight();
+  public int weight(Object u, Object v) {
+    if (!this.isEdge(u, v)) {
+      return 0;
     }
-    return 0;
+    return this.graph.get(u).get(v);
   }
-
 }

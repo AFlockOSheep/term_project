@@ -8,6 +8,7 @@ import graph.*;
 import graphalg.*;
 import java.util.*;
 
+
 public class KruskalTest {
 
   private static final int VERTICES = 10;

@@ -1,6 +1,6 @@
 package graphalg;
 
-public class Edge {
+public class Edge implements Comparable<Edge>{
     private Object vertex1;
     private Object vertex2;
     private int weight;
@@ -31,4 +31,8 @@ public class Edge {
         this.vertex2 = vertex2;
     }
 
+    @Override
+    public int compareTo(Edge o) {
+        return this.weight - o.getWeight();
+    }
 }
