@@ -16,6 +16,8 @@ import java.util.*;
 
 
 public class Kruskal {
+
+
   private static void merge(Edge[] numbers, int i, int j, int k) {
     int mergedSize = k - i + 1;                // Size of merged partition
     Edge[] mergedNumbers = new Edge[mergedSize]; // Dynamically allocates temporary
@@ -103,9 +105,10 @@ public class Kruskal {
    */
   public static WUGraph minSpanTree(WUGraph g) {
     HashMap<Object, Integer> vertexMap = new HashMap<>();
-    Edge[] edgeList = new Edge[g.edgeCount()];
     Object[] vertexList = g.getVertices(); //Object Array
     DisjointSets disjointSets = new DisjointSets(vertexList.length);
+
+
 
     //PART 1
     //Create a new graph T having the same vertices as G, but no edges (yet).
@@ -117,13 +120,19 @@ public class Kruskal {
     //4e9rowAr82SzIAXX+uJRbQ==
     //PART 2
     //Make a list of all edges in G
-    HashSet<Edge> set = depthFirstSearch(g, vertexList[0]);
-    set.toArray(edgeList);
+    HashSet<Edge> set = new HashSet<>();
+    for (Object vertex : g.getVertices()) {
+      if (!vertexMap.containsKey(vertex)) {
+        set.addAll(depthFirstSearch(g, vertex));
+      }
+    }
+    Edge[] edgeList = set.toArray(new Edge[set.size()]);
 
     //PART 3
     //Sort edges by weight in O(|E| log |E|) time
     //private static void mergeSort(Edge[] numbers, int i, int k) {
     mergeSort(edgeList, 0, edgeList.length - 1);
+
 
     //PART 4.1
     //Create MST using disjoint sets and unions
